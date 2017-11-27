@@ -73,13 +73,13 @@ let layer_output = (layer, input) => {
         | _ => {
             /* Js.log("Input:"); Js.log(input); Js.log(""); */
             /* Js.log("Weights:"); Js.log(layer.weights); Js.log(""); */
-            let dot = Matrix.dot(
+            let mult = Matrix.mult(
                 [|input|],
                 layer.l_type == Output ?
                     transpose(layer.weights) : layer.weights
             );
-            let with_bias = Matrix.sum(dot, [|layer.biases|]);
-            /* Js.log("Dot: "); Js.log(dot); Js.log(""); */
+            let with_bias = Matrix.sum(mult, [|layer.biases|]);
+            /* Js.log("mult: "); Js.log(mult); Js.log(""); */
             /* Js.log("with_bias: "); Js.log(with_bias); Js.log(""); */
             (with_bias[0], Matrix.apply(with_bias, layer.activation)[0])
         }

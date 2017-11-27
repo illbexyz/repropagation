@@ -69,7 +69,7 @@ let backpropagation = (network, input, output) => {
     );
     
     for (n in net_length - 2 downto 0) {
-        let first = Matrix.dot(
+        let first = Matrix.mult(
             transpose(network[n + 1].weights),
             [|deltas[n + 1]|]
         );
