@@ -28,22 +28,21 @@ let diff_loss = (expected, actual) => {
     (actual -. expected)
 };
 
-let quadratic_difference = (expected, actual) => {
+let quadratic_difference = (~expected, ~actual) => {
     (actual -. expected) ** 2.0
 };
 
-let std_deviation = (~expecteds, ~actuals) => {
-    let quad_diffs = Array.mapi((i, actual) => quadratic_difference(expecteds[i], actual) , actuals);
+let array_map2 = (fn, x, y) => {
+    if (Array.length(x) != Array.length(y)) {
+        raise(invalid_arg("x and y have not the same length"))
+    };
+    Array.mapi((i, _) => fn(x[i], y[i]), x)
+};
+
+let std_deviation = (expecteds, actuals) => {
+    let quad_diffs = array_map2((a, e) => quadratic_difference(~expected=e, ~actual=a), actuals, expecteds);
     let sum = Array.fold_left((a, b) => a +. b, 0.0, quad_diffs);
     sqrt(sum /. float_of_int(Array.length(actuals)))
-};
-
-let vec_dot = (x, y) => {
-    Array.mapi((i, _) => x[i] *. y[i], x)
-};
-
-let invert_vec = (x) => {
-    Array.map((v) => 1.0 -. v, x)
 };
 
 let vectorize1 = (fn) => {
@@ -54,10 +53,15 @@ let vectorize2 = (fn) => {
     (x, y) => Array.map((xi) => fn(xi, y), x)
 };
 
-let adamard = (x, y) => {
-    Array.mapi((i, xi) => xi *. y[i], x)
+let vectorize2_both = (fn) => {
+    (x, y) => array_map2((a, b) => fn(a, b), x, y)
 };
 
-let sub (x, y) = {
-    x - y
+let adamard = (x, y) => {
+    array_map2((a, b) => a *. b, x, y)
+};
+
+let array_average = (x) => {
+    let sum = Array.fold_left((prev, curr) => prev +. curr, 0.0, x);
+    sum /. float_of_int(Array.length(x))
 };

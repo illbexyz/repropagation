@@ -3,15 +3,6 @@ open Layer;
 open Network;
 open Utils;
 
-let revert = (a: array('a)) => {
-    let length = Array.length(a) - 1;
-    let rev_a = Array.make(length + 1, a[0]);
-    for (i in length downto 0) {
-        rev_a[length - i] = a[i]
-    };
-    rev_a
-};
-
 let copy_weights = (network) => {
     Array.init(
         Array.length(network),
@@ -38,24 +29,18 @@ let std_dev = (network, inputs, outputs) => {
         let (_, res) = execute_network(network, inputs[i]);
         results[i] = res[Array.length(res) - 1]
     };
-    Js.log("res");
-    Js.log(results);
-    Js.log("out");
-    Js.log(outputs);
-    let std_dev = Utils.std_deviation(
-        ~expecteds=outputs,
-        ~actuals=results[Array.length(results) - 1]
-    );
-    std_dev
+    let vec_std_dev = Utils.vectorize2_both(Utils.std_deviation);
+    let std_devs = vec_std_dev(outputs, results);
+    let avg_std_dev = Utils.array_average(std_devs);
+    avg_std_dev
 };
 
 let backpropagation = (network, input, output) => {
-    /* Js.log(network); Js.log(); */
     let net_length = Array.length(network);
     let updated_weights = copy_weights(network);
     let updated_biases = copy_biases(network);
     let (zs, acs) = execute_network(network, input);
-    let vec_diff_loss = vectorize2(diff_loss);
+    let vec_diff_loss = vectorize2_both(diff_loss);
     let vec_diff_act = vectorize1(diff_relu);
     
     let deltas = Array.init(
@@ -74,23 +59,12 @@ let backpropagation = (network, input, output) => {
             [|deltas[n + 1]|]
         );
         let second = vec_diff_act(zs[n]);
-        /* Js.log("first"); Js.log(first);
-        Js.log("second"); Js.log(second); */
         deltas[n] = adamard(transpose(first)[0], second);
-        /* Js.log("delta"); Js.log(deltas[n]); */
     };
 
-    /* Js.log(updated_weights); */
-    /* Printf.printf("rows: %i\n", rows(updated_weights[2]));
-    Printf.printf("cols: %i\n", cols(updated_weights[2]));
-    Printf.printf("rows: %i\n", rows(network[2].weights));
-    Printf.printf("cols: %i\n", cols(network[2].weights)); */
     for (l in net_length - 1 downto 1) {
         for (j in 0 to rows(network[l].weights) - 1) {
             for (k in 0 to cols(network[l].weights) - 1) {
-                /* Printf.printf("%i %i %i\n", l, j, k); */
-                /* Js.log(acs); print_newline();
-                Js.log(deltas); print_newline(); */
                 updated_weights[l][j][k] = acs[l - 1][k] *. deltas[l][j];
             }
         };
@@ -161,32 +135,14 @@ let inputs = [|
 |];
 
 let outputs = [|
-    1.0,
-    0.0,
-    1.0,
-    0.0,
-    1.0,
-    0.0,
-    1.0,
-    0.0
+    [|1.0|],
+    [|0.0|],
+    [|1.0|],
+    [|0.0|],
+    [|1.0|],
+    [|0.0|],
+    [|1.0|],
+    [|0.0|]
 |];
 
-/* backpropagation(network, inputs[0], outputs[0]); */
-
 train(network, 0.3, inputs, outputs, 100000000);
-/* let result = execute_network(network, inputs[1]); */
-
-/* Js.log(result); */
-/* let results = Array.make(Array.length(inputs), Array.make(Array.length(inputs[0]), 0.0));
-for (i in 0 to Array.length(inputs) - 1) {
-    let outputs = execute_network(network, inputs[i]);
-    results[i] = outputs[Array.length(outputs) - 1]
-};
-Js.log(results);
-let std_dev = Utils.std_deviation(
-    ~expecteds=outputs,
-    ~actuals=results[Array.length(results) - 1]
-);
-
-Printf.printf("Std. dev.: %.2f", std_dev);
-print_newline(); */
