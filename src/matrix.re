@@ -28,6 +28,18 @@ let sum = (x, y) => {
   z
 };
 
+let sub = (x, y) => {
+  let x_rows = rows(x);
+  let x_cols = cols(x);
+  let z = Array.make_matrix(x_rows, x_cols, 0.0);
+  for (i in 0 to x_rows - 1) {
+    for (j in 0 to x_cols - 1) {
+      z[i][j] = x[i][j] -. y[i][j]
+    }
+  };
+  z
+};
+
 let dot = (x, y) => {
   let x_rows = Array.length(x);
   let y_rows = Array.length(y);
@@ -47,5 +59,12 @@ let apply = (matrix, fn) => {
   Array.map(
     (i) => Array.map((j) => fn(j), i),
     matrix
+  )
+};
+
+let transpose = (matrix) => {
+  Array.mapi(
+    (iCol, _) => Array.map((row) => row[iCol], matrix),
+    matrix[0]
   )
 };
