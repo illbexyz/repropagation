@@ -1,18 +1,22 @@
-# Basic Reason Template
+# Repropagation (not working yet)
 
-Hello! This project allows you to quickly get started with Reason and BuckleScript. If you wanted a more sophisticated version, try the `react` template (`bsb -theme react -init .`).
+Repropagation algorithm implemented in [ReasonML](https://reasonml.github.io/).
 
-# Build
+This implementation is not intended to be used in actual machine learning environments, it was just an excuse to hack with Reason while learning the algorithm.
+
+# Usage
+
+## Build
 ```
 npm run build
 ```
 
-# Build + Watch
-
+## Build + Watch
 ```
-npm run watch
+npm start
 ```
 
-
-# Editor
-If you use `vscode`, Press `Windows + Shift + B` it will build automatically
+## Execute
+```
+node ./src/backpropagation.bs.js
+```
