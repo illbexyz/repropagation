@@ -35,7 +35,7 @@ let build_network = (n_input_neurons, (n_h_layers, n_neurons_hidden), n_output_n
     ])
 };
 
-let change_network_weights = (network, weights, biases): network => {
+let change_network = (network, weights, biases): network => {
     /* Input layer's weights doesn't need to be changed */
     let input_layer = network[0];
     let output_layer_index = Array.length(network) - 1;

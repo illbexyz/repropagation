@@ -67,16 +67,12 @@ let execute = (layer, input) => {
             (input, Array.map((i) => layer.activation(i), input))
         }
         | _ => {
-            /* Js.log("Input:"); Js.log(input); Js.log("");
-            Js.log("Weights:"); Js.log(layer.weights); Js.log(""); */
             let input_transpose = transpose([| input |]);
             let mult = transpose(Matrix.mult(
                 layer.weights,
                 input_transpose
             ));
-            /* Js.log("mult: "); Js.log(mult); Js.log(""); */
             let with_bias = Matrix.sum(mult, [|layer.biases|]);
-            /* Js.log("with_bias: "); Js.log(with_bias); Js.log(""); */
             (with_bias[0], Matrix.apply(with_bias, layer.activation)[0])
         }
     };

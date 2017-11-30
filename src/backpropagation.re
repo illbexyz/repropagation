@@ -29,6 +29,18 @@ let std_dev = (network, inputs, outputs) => {
         let (_, res) = execute_network(network, inputs[i]);
         results[i] = res[Array.length(res) - 1]
     };
+    print_string("Expected / Actual: \n");
+    List.iter2(
+        (a, o) => {
+            print_string("    ");
+            print_float(o[0]);
+            print_string("    |    ");
+            print_float(a[0]);
+            print_newline();
+        },
+        Array.to_list(results),
+        Array.to_list(outputs)
+    );
     let vec_std_dev = Utils.vectorize2_both(Utils.std_deviation);
     let std_devs = vec_std_dev(outputs, results);
     let avg_std_dev = Utils.array_average(std_devs);
@@ -47,19 +59,20 @@ let backpropagation = (network, input, output) => {
         net_length,
         (i) => Array.make(Matrix.rows(network[i].weights), 0.0)
     );
-
+    
     deltas[net_length - 1] = adamard(
         vec_diff_loss(acs[net_length - 1], output),
         vec_diff_act(zs[net_length - 1])
     );
-    
+
     for (n in net_length - 2 downto 0) {
         let first = Matrix.mult(
             transpose(network[n + 1].weights),
-            [|deltas[n + 1]|]
+            transpose([|deltas[n + 1]|])
         );
         let second = vec_diff_act(zs[n]);
-        deltas[n] = adamard(transpose(first)[0], second);
+        let ada = adamard(transpose(first)[0], second);
+        deltas[n] = ada; 
     };
 
     for (l in net_length - 1 downto 1) {
@@ -73,13 +86,13 @@ let backpropagation = (network, input, output) => {
         };
     };
 
-    /* Js.log(updated_weights); */
     (updated_weights, updated_biases)
 };
 
 let rec train = (network, learning_rate, inputs, outputs, epochs): network => {
     let sd = std_dev(network, inputs, outputs);
-    Printf.printf("Std. dev.: %.2f \n", sd);
+    let batch_size = float_of_int(Array.length(inputs));
+    Printf.printf("Std. dev: %.2f \n\n", sd);
     if (epochs <= 0) {
         network
     } else {
@@ -98,30 +111,22 @@ let rec train = (network, learning_rate, inputs, outputs, epochs): network => {
                 };
             };
         };
-        let avg_weights = Array.map(
-            (weights) => Matrix.apply(weights, (x) => x /. float_of_int(Array.length(inputs))),
-            diff_weights
-        );
-        let avg_biases = Array.map(
-            (biases) => vectorize2((x, y) => x /. y)(biases)(float_of_int(Array.length(inputs))),
-            diff_biases
-        );
         for (l in 1 to Array.length(network) - 1) {
-            for (j in 0 to rows(avg_weights[l]) - 1) {
-                for (k in 0 to cols(avg_weights[l]) - 1) {
-                    avg_weights[l][j][k] = network[l].weights[j][k] -. (learning_rate *. avg_weights[l][j][k])
+            for (j in 0 to rows(diff_weights[l]) - 1) {
+                for (k in 0 to cols(diff_weights[l]) - 1) {
+                    diff_weights[l][j][k] = network[l].weights[j][k] +. (learning_rate /. batch_size) *. diff_weights[l][j][k]
                 }
             };
-            for (i in 0 to Array.length(avg_biases[l]) - 1) {
-                avg_biases[l][i] = network[l].biases[i] -. (learning_rate *. avg_biases[l][i])
+            for (i in 0 to Array.length(diff_biases[l]) - 1) {
+                diff_biases[l][i] = network[l].biases[i] +. (learning_rate /. batch_size) *. diff_biases[l][i]
             }
         };
-        let updated_network = change_network_weights(network, avg_weights, avg_biases);
+        let updated_network = change_network(network, diff_weights, diff_biases);
         train(updated_network, learning_rate, inputs, outputs, epochs - 1)
     }
 };
 
-let network = build_network(3, (2, 3), 1);
+let network = build_network(3, (1, 3), 1);
 
 let inputs = [|
     [|0.0, 0.0, 0.0|],
@@ -145,4 +150,42 @@ let outputs = [|
     [|0.0|]
 |];
 
-train(network, 0.3, inputs, outputs, 100000000);
+/* let network = build_network(3, (2, 3), 3);
+
+let inputs = [|
+    [|0.0, 0.0, 0.0|],
+    [|0.0, 0.0, 1.0|],
+    [|0.0, 1.0, 0.0|],
+    [|0.0, 1.0, 1.0|],
+    [|1.0, 0.0, 0.0|],
+    [|1.0, 0.0, 1.0|],
+    [|1.0, 1.0, 0.0|],
+|];
+
+let outputs = [|
+    [|0.0, 0.0, 1.0|],
+    [|0.0, 1.0, 0.0|],
+    [|0.0, 1.0, 1.0|],
+    [|1.0, 0.0, 0.0|],
+    [|1.0, 0.0, 1.0|],
+    [|1.0, 1.0, 0.0|],
+    [|1.0, 1.0, 1.0|],
+|]; */
+
+/* let network = build_network(2, (1, 2), 1);
+
+let inputs = [|
+    [|0.0, 0.0|],
+    [|0.0, 1.0|],
+    [|1.0, 0.0|],
+    [|1.0, 1.0|]
+|];
+
+let outputs = [|
+    [|0.0|],
+    [|1.0|],
+    [|1.0|],
+    [|1.0|]
+|]; */
+
+train(network, 0.1, inputs, outputs, 5000);
