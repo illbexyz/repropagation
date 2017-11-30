@@ -9,10 +9,6 @@ type layer = {
     activation: (float) => float
 };
 
-let count_neurons = (layer) => {
-    Array.length(layer.weights)
-};
-
 let randomize_weights = (n, m)=> {
     Array.init(n,
         (_) => Array.init(m,
@@ -65,21 +61,21 @@ let change_layer = (layer, weights, biases) => {
     n_layer
 };
 
-let layer_output = (layer, input) => {
+let execute = (layer, input) => {
     switch layer.l_type {
         | Input => {
             (input, Array.map((i) => layer.activation(i), input))
         }
         | _ => {
-            /* Js.log("Input:"); Js.log(input); Js.log(""); */
-            /* Js.log("Weights:"); Js.log(layer.weights); Js.log(""); */
-            let mult = Matrix.mult(
-                [|input|],
-                layer.l_type == Output ?
-                    transpose(layer.weights) : layer.weights
-            );
-            let with_bias = Matrix.sum(mult, [|layer.biases|]);
+            /* Js.log("Input:"); Js.log(input); Js.log("");
+            Js.log("Weights:"); Js.log(layer.weights); Js.log(""); */
+            let input_transpose = transpose([| input |]);
+            let mult = transpose(Matrix.mult(
+                layer.weights,
+                input_transpose
+            ));
             /* Js.log("mult: "); Js.log(mult); Js.log(""); */
+            let with_bias = Matrix.sum(mult, [|layer.biases|]);
             /* Js.log("with_bias: "); Js.log(with_bias); Js.log(""); */
             (with_bias[0], Matrix.apply(with_bias, layer.activation)[0])
         }

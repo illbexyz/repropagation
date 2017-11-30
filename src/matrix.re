@@ -25,6 +25,9 @@ let sub = (x, y) => {
 };
 
 let mult = (x, y) => {
+  if (cols(x) != rows(y)) {
+    raise(invalid_arg("the x rows and y columns must match"))
+  };
   let x_rows = Array.length(x);
   let y_rows = Array.length(y);
   let y_cols = max(0, Array.length(y[0]));

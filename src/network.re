@@ -69,11 +69,11 @@ let execute_network = (network: network, input: array(float)) => {
         Array.length(network),
         (i) => Array.make(Matrix.rows(network[i].weights), 0.0)
     );
-    let (a, b) = layer_output(network[0], input);
+    let (a, b) = execute(network[0], input);
     zs[0] = a;
     activations[0] = b;
     for (i in 1 to Array.length(network) - 1) {
-        let (a, b) = layer_output(network[i], activations[i - 1]);
+        let (a, b) = execute(network[i], activations[i - 1]);
         zs[i] = a;
         activations[i] = b
     };
