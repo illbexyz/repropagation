@@ -17,7 +17,7 @@ let diff_relu = (x) => {
 };
 
 let logistic = (x) => {
-      1.0 /. (1.0 +. e ** (x))
+      1.0 /. (1.0 +. e ** (-. x))
 };
 
 let diff_logistic = (x) => {
